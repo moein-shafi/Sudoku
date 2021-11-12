@@ -4,13 +4,13 @@ import numpy
 import random
 
 from genetic.population import Population
-from genetic.candidate import Candidate
+from genetic.chromosome import Chromosome
 from genetic.crossover_functions import *
 from genetic.constants import *
 
 
 def read_input():
-    with open("input_sudoku.txt", "r") as f:
+    with open(input_file, "r") as f:
         input_sudoku = numpy.loadtxt(f).reshape((sudoku_size, sudoku_size)).astype(int)
         return input_sudoku
 
@@ -29,9 +29,9 @@ def select_parent(candidates):
 
 
 def check_ultimate_state(population):
-    for candidate in population.candidates:
-        if(candidate.fitness == 1):
-            print(candidate.values)
+    for chromosome in population.candidates:
+        if(chromosome.fitness == 1):
+            print(chromosome.values)
             return True
 
     return False
@@ -45,14 +45,14 @@ def mutate_child(input_sudoku, mutation_rate, child):
 
 def add_elites(population, new_population):
     for i in range(0, elites_size):
-        elite = Candidate()
+        elite = Chromosome()
         elite.values = numpy.copy(population.candidates[i].values)
         new_population.append(elite)
 
 
 def create_childs_from_parents(first_parent, second_parent):
-    first_child = Candidate()
-    second_child = Candidate()
+    first_child = Chromosome()
+    second_child = Chromosome()
     first_child.values = numpy.copy(first_parent.values)
     second_child.values = numpy.copy(second_parent.values)
     return first_child, second_child
@@ -90,14 +90,14 @@ def solve(input_sudoku):
             return True
         population.candidates = create_new_population(input_sudoku, population)
         population.update_fitness()
-        
+
     print("Oops! Can't find the solution :(")
     return False
 
 
 def main():
     input_sudoku_array  = read_input()
-    input_sudoku = Candidate(input_sudoku_array)
+    input_sudoku = Chromosome(input_sudoku_array)
     solve(input_sudoku)
 
 

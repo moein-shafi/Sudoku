@@ -3,7 +3,7 @@ import random
 
 from .constants import *
 
-class Candidate(object):
+class Chromosome(object):
     def __init__(self, values=None):
         self.values = numpy.zeros((sudoku_size, sudoku_size), dtype=int) if not numpy.any(values) else values
         self.fitness = None
@@ -64,7 +64,7 @@ class Candidate(object):
 
         for i in range(0, sudoku_size):
             for j in range(0, sudoku_size):
-                rows_count[self.values[i][j]-1] += 1
+                rows_count[self.values[i][j] - 1] += 1
             rows_fitness += (1.0 / len(set(rows_count))) / sudoku_size
             rows_count = numpy.zeros(sudoku_size)
 
@@ -76,7 +76,7 @@ class Candidate(object):
         columns_count = numpy.zeros(sudoku_size)
         for i in range(0, sudoku_size):
             for j in range(0, sudoku_size):
-                columns_count[self.values[j][i]-1] += 1
+                columns_count[self.values[j][i] - 1] += 1
             columns_fitness += (1.0 / len(set(columns_count))) / sudoku_size
             columns_count = numpy.zeros(sudoku_size)
 
@@ -88,17 +88,17 @@ class Candidate(object):
         blocks_fitness = 0
         for i in range(0, sudoku_size, 3):
             for j in range(0, sudoku_size, 3):
-                blocks_count[self.values[i][j]-1] += 1
-                blocks_count[self.values[i+1][j]-1] += 1
-                blocks_count[self.values[i+2][j]-1] += 1
+                blocks_count[self.values[i][j] - 1] += 1
+                blocks_count[self.values[i+1][j] - 1] += 1
+                blocks_count[self.values[i+2][j] - 1] += 1
 
-                blocks_count[self.values[i][j+1]-1] += 1
-                blocks_count[self.values[i+1][j+1]-1] += 1
-                blocks_count[self.values[i+2][j+1]-1] += 1
+                blocks_count[self.values[i][j+1] - 1] += 1
+                blocks_count[self.values[i+1][j+1] - 1] += 1
+                blocks_count[self.values[i+2][j+1] - 1] += 1
 
-                blocks_count[self.values[i][j+2]-1] += 1
-                blocks_count[self.values[i+1][j+2]-1] += 1
-                blocks_count[self.values[i+2][j+2]-1] += 1
+                blocks_count[self.values[i][j+2] - 1] += 1
+                blocks_count[self.values[i+1][j+2] - 1] += 1
+                blocks_count[self.values[i+2][j+2] - 1] += 1
 
                 blocks_fitness += (1.0 / len(set(blocks_count))) / sudoku_size
                 blocks_count = numpy.zeros(sudoku_size)

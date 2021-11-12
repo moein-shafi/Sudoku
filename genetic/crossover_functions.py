@@ -3,7 +3,7 @@ import random
 
 from past.builtins import range
 
-from .candidate import Candidate
+from .chromosome import Chromosome
 from .constants import *
 
 

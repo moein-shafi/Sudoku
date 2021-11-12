@@ -8,3 +8,5 @@ maximum_generation = 1000
 mutation_rate = 0.06
 crossover_rate = 1.0
 selection_rate = 0.85
+
+input_file = "input_sudoku.txt"

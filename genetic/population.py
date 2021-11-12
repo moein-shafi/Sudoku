@@ -2,7 +2,7 @@ import numpy
 import random
 import operator
 
-from .candidate import Candidate
+from .chromosome import Chromosome
 from .constants import *
 
 class Population(object):
@@ -36,7 +36,7 @@ class Population(object):
                     row[j] = self.feasible_values.values[row_index][j][feasible_value_index]
 
 
-    def fill_blanks(self, candidate):
+    def fill_blanks(self, chromosome):
         for i in range(0, sudoku_size):
             row = numpy.zeros(sudoku_size)
             for j in range(0, sudoku_size):
@@ -48,24 +48,24 @@ class Population(object):
                     row[j] = self.input_sudoku.values[i][j]
 
             self.check_duplication_in_row(row, i)
-            candidate.values[i] = row
+            chromosome.values[i] = row
 
 
     def update_fitness(self):
-        for candidate in self.candidates:
-            candidate.update_fitness()
+        for chromosome in self.candidates:
+            chromosome.update_fitness()
         return
 
 
     def create_first_population(self, input_sudoku):
         self.input_sudoku = input_sudoku
-        self.feasible_values = Candidate()
+        self.feasible_values = Chromosome()
         self.prepare_feasible_values_for_each_cell()
 
         for _ in range(0, population_size):
-            candidate = Candidate()
-            self.fill_blanks(candidate)
-            self.candidates.append(candidate)
+            chromosome = Chromosome()
+            self.fill_blanks(chromosome)
+            self.candidates.append(chromosome)
 
         self.update_fitness()
         return
