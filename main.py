@@ -11,94 +11,95 @@ from genetic.constants import *
 
 def read_input():
     with open("input_sudoku.txt", "r") as f:
-        values = numpy.loadtxt(f).reshape((Nd, Nd)).astype(int)
-        return values
+        input_sudoku = numpy.loadtxt(f).reshape((sudoku_size, sudoku_size)).astype(int)
+        return input_sudoku
 
 
 def select_parent(candidates):
-    candidate1_index = random.randint(0, len(candidates) - 1)
-    candidate2_index = candidate1_index
-    while (candidate2_index == candidate1_index):
-        candidate2_index = random.randint(0, len(candidates) - 1)
+    candidate1 = candidates[random.randint(0, len(candidates) - 1)]
+    candidate2 = candidate1
+    while (candidate1 == candidate2):
+        candidate2 = candidates[random.randint(0, len(candidates) - 1)]
 
-    candidate1 = candidates[candidate1_index]
-    candidate2 = candidates[candidate2_index]
-
-    rand = random.uniform(0, 1.1)
-    while (rand > 1):  # Outside [0, 1] boundary. Choose another.
-        rand = random.uniform(0, 1.1)
-
+    rand = random.uniform(0, 1)
     fittest = candidate1 if candidate1.fitness > candidate2.fitness else candidate2
-    weakest = candidate2 if candidate1.fitness > candidate2.fitness else candidate1
+    weakest = candidate2 if candidate1.fitness < candidate2.fitness else candidate1
 
     return fittest if rand < selection_rate else weakest
 
 
 def check_ultimate_state(population):
-    for c in range(0, Nc):
-        fitness = population.candidates[c].fitness
-        if(fitness == 1):
-            print(population.candidates[c].values)
+    for candidate in population.candidates:
+        if(candidate.fitness == 1):
+            print(candidate.values)
             return True
 
     return False
 
 
-def mutate_child(given, mutation_rate, child):
-    child.mutate(mutation_rate, given)
+def mutate_child(input_sudoku, mutation_rate, child):
+    if (random.uniform(0, 1) < mutation_rate):
+        child.mutate(mutation_rate, input_sudoku)
     child.update_fitness()
 
 
-def add_elites(population, next_population):
-    for e in range(0, Ne):
+def add_elites(population, new_population):
+    for i in range(0, elites_size):
         elite = Candidate()
-        elite.values = numpy.copy(population.candidates[e].values)
-        next_population.append(elite)
+        elite.values = numpy.copy(population.candidates[i].values)
+        new_population.append(elite)
 
 
-def create_new_population(given, population):
-    next_population = []
+def create_childs_from_parents(first_parent, second_parent):
+    first_child = Candidate()
+    second_child = Candidate()
+    first_child.values = numpy.copy(first_parent.values)
+    second_child.values = numpy.copy(second_parent.values)
+    return first_child, second_child
+
+
+def create_new_population(input_sudoku, population):
+    new_population = []
     population.sort()
 
-    for count in range(Ne, Nc, 2):
-        parent1 = select_parent(population.candidates)
-        parent2 = select_parent(population.candidates)
-        child1, child2 = crossover(parent1, parent2)
-        mutate_child(given, mutation_rate, child1)
-        mutate_child(given, mutation_rate, child2)
-        
-        next_population.append(child1)
-        next_population.append(child2)
+    for _ in range(0, int(population_size / 2)):
+        first_parent = select_parent(population.candidates)
+        second_parent = first_parent
+        while (first_parent == second_parent):
+            second_parent = select_parent(population.candidates)
 
-    add_elites(population, next_population)
-    return next_population
+        first_child, second_child = create_childs_from_parents(first_parent, second_parent)
+        crossover(first_child, second_child)
+        mutate_child(input_sudoku, mutation_rate, first_child)
+        new_population.append(first_child)
+        mutate_child(input_sudoku, mutation_rate, second_child)
+        new_population.append(second_child)
+
+    add_elites(population, new_population)
+    return new_population
 
 
-def solve(given):
+def solve(input_sudoku):
     random.seed()
     population = Population()
-    population.seed(given)
-    for generation in range(0, Ng):
-        print("Generation number: ", generation)
+    population.create_first_population(input_sudoku)
+    print("> Populdation created.")
+    for generation in range(0, maximum_generation):
+        print("> Generation number:", generation)
         if check_ultimate_state(population):
             return True
-        population.candidates = create_new_population(given, population)
+        population.candidates = create_new_population(input_sudoku, population)
         population.update_fitness()
         
-    print("No solution found.")
+    print("Oops! Can't find the solution :(")
     return False
 
 
 def main():
-    values = read_input()
-    given = Candidate(values)
-    solve(given)
+    input_sudoku_array  = read_input()
+    input_sudoku = Candidate(input_sudoku_array)
+    solve(input_sudoku)
 
 
 if __name__ == '__main__':
     main()
-
-### TODO list:
-#   change names
-#   change prints
-#   change functions' names

@@ -1,10 +1,11 @@
 import numpy
 import random
-from genetic.constants import *
+
+from .constants import *
 
 class Candidate(object):
     def __init__(self, values=None):
-        self.values = numpy.zeros((Nd, Nd), dtype=int) if not numpy.any(values) else values
+        self.values = numpy.zeros((sudoku_size, sudoku_size), dtype=int) if not numpy.any(values) else values
         self.fitness = None
         return
 
@@ -22,14 +23,14 @@ class Candidate(object):
 
 
     def check_row_duplication(self, row, value):
-        for column in range(0, Nd):
+        for column in range(0, sudoku_size):
             if(self.values[row][column] == value):
                return True
         return False
 
 
     def check_column_duplication(self, column, value):
-        for row in range(0, Nd):
+        for row in range(0, sudoku_size):
             if(self.values[row][column] == value):
                return True
         return False
@@ -59,34 +60,34 @@ class Candidate(object):
 
     def calculate_rows_fitness(self):
         rows_fitness = 0
-        rows_count = numpy.zeros(Nd)
+        rows_count = numpy.zeros(sudoku_size)
 
-        for i in range(0, Nd):
-            for j in range(0, Nd):
+        for i in range(0, sudoku_size):
+            for j in range(0, sudoku_size):
                 rows_count[self.values[i][j]-1] += 1
-            rows_fitness += (1.0 / len(set(rows_count))) / Nd
-            rows_count = numpy.zeros(Nd)
+            rows_fitness += (1.0 / len(set(rows_count))) / sudoku_size
+            rows_count = numpy.zeros(sudoku_size)
 
         return rows_fitness
 
 
     def calculate_columns_fitness(self):
         columns_fitness = 0
-        columns_count = numpy.zeros(Nd)
-        for i in range(0, Nd):
-            for j in range(0, Nd):
+        columns_count = numpy.zeros(sudoku_size)
+        for i in range(0, sudoku_size):
+            for j in range(0, sudoku_size):
                 columns_count[self.values[j][i]-1] += 1
-            columns_fitness += (1.0 / len(set(columns_count))) / Nd
-            columns_count = numpy.zeros(Nd)
+            columns_fitness += (1.0 / len(set(columns_count))) / sudoku_size
+            columns_count = numpy.zeros(sudoku_size)
 
         return columns_fitness
 
 
     def calculate_blocks_fitness(self):
-        blocks_count = numpy.zeros(Nd)
+        blocks_count = numpy.zeros(sudoku_size)
         blocks_fitness = 0
-        for i in range(0, Nd, 3):
-            for j in range(0, Nd, 3):
+        for i in range(0, sudoku_size, 3):
+            for j in range(0, sudoku_size, 3):
                 blocks_count[self.values[i][j]-1] += 1
                 blocks_count[self.values[i+1][j]-1] += 1
                 blocks_count[self.values[i+2][j]-1] += 1
@@ -99,8 +100,8 @@ class Candidate(object):
                 blocks_count[self.values[i+1][j+2]-1] += 1
                 blocks_count[self.values[i+2][j+2]-1] += 1
 
-                blocks_fitness += (1.0 / len(set(blocks_count))) / Nd
-                blocks_count = numpy.zeros(Nd)
+                blocks_fitness += (1.0 / len(set(blocks_count))) / sudoku_size
+                blocks_count = numpy.zeros(sudoku_size)
 
         return blocks_fitness
 
@@ -113,43 +114,37 @@ class Candidate(object):
         else:
             fitness = self.columns_fitness * self.blocks_fitness
         return fitness
- 
+
 
 
     def update_fitness(self):
         self.rows_fitness = self.calculate_rows_fitness()
         self.columns_fitness = self.calculate_columns_fitness()
-        self.blocks_fitness = self.calculate_blocks_fitness()      
+        self.blocks_fitness = self.calculate_blocks_fitness()
         self.fitness = self.calculate_fitness()
- 
 
-    def mutate(self, mutation_rate, given):
-        rand = random.uniform(0, 1.1)
-        while (rand > 1):
-            rand = random.uniform(0, 1.1)
-    
-        if (rand < mutation_rate):
-            while(True):
-                row1 = random.randint(0, Nd - 1)
-                row2 = row1
-                
-                from_column = random.randint(0, Nd - 1)
-                to_column = random.randint(0, Nd - 1)
-                while(from_column == to_column):
-                    from_column = random.randint(0, Nd - 1)
-                    to_column = random.randint(0, Nd - 1)   
 
-                if (given.values[row1][from_column] == 0 and given.values[row1][to_column] == 0):
-                    # ...and that we are not causing a duplicate in the rows' columns.
-                    if (not given.check_column_duplication(to_column, self.values[row1][from_column])
-                       and not given.check_column_duplication(from_column, self.values[row2][to_column])
-                       and not given.check_block_duplication(row2, to_column, self.values[row1][from_column])
-                       and not given.check_block_duplication(row1, from_column, self.values[row2][to_column])):
-                    
-                        # Swap values.
-                        temp = self.values[row2][to_column]
-                        self.values[row2][to_column] = self.values[row1][from_column]
-                        self.values[row1][from_column] = temp
-                        break
-    
+    def check_mutate_duplication(self, input_sudoku, dest_column, source_column, row):
+        if (not input_sudoku.check_column_duplication(dest_column, self.values[row][source_column]) and
+            not input_sudoku.check_column_duplication(source_column, self.values[row][dest_column]) and
+            not input_sudoku.check_block_duplication(row, dest_column, self.values[row][source_column]) and
+            not input_sudoku.check_block_duplication(row, source_column, self.values[row][dest_column])):
+            return True
+        return False
+
+
+    def mutate(self, mutation_rate, input_sudoku):
+        while(True):
+            row = random.randint(0, sudoku_size - 1)
+            source_column = random.randint(0, sudoku_size - 1)
+            dest_column = random.randint(0, sudoku_size - 1)
+            while(source_column == dest_column):
+                source_column = random.randint(0, sudoku_size - 1)
+                dest_column = random.randint(0, sudoku_size - 1)
+
+            if (input_sudoku.values[row][source_column] == 0 and input_sudoku.values[row][dest_column] == 0):
+                if (self.check_mutate_duplication(input_sudoku, dest_column, source_column, row)):
+                    self.values[row][source_column], self.values[row][dest_column] = self.values[row][dest_column], self.values[row][source_column]
+                    break
+
         return True
