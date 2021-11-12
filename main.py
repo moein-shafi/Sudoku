@@ -15,21 +15,20 @@ def read_input():
         return input_sudoku
 
 
-def select_parent(candidates):
-    candidate1 = candidates[random.randint(0, len(candidates) - 1)]
-    candidate2 = candidate1
-    while (candidate1 == candidate2):
-        candidate2 = candidates[random.randint(0, len(candidates) - 1)]
+def select_parent(chromosomes):
+    chromosome1 = chromosomes[random.randint(0, len(chromosomes) - 1)]
+    chromosome2 = chromosome1
+    while (chromosome1 == chromosome2):
+        chromosome2 = chromosomes[random.randint(0, len(chromosomes) - 1)]
 
     rand = random.uniform(0, 1)
-    fittest = candidate1 if candidate1.fitness > candidate2.fitness else candidate2
-    weakest = candidate2 if candidate1.fitness < candidate2.fitness else candidate1
-
+    fittest = chromosome1 if chromosome1.fitness > chromosome2.fitness else chromosome2
+    weakest = chromosome2 if chromosome1.fitness < chromosome2.fitness else chromosome1
     return fittest if rand < selection_rate else weakest
 
 
 def check_ultimate_state(population):
-    for chromosome in population.candidates:
+    for chromosome in population.chromosomes:
         if(chromosome.fitness == 1):
             print(chromosome.values)
             return True
@@ -46,7 +45,7 @@ def mutate_child(input_sudoku, mutation_rate, child):
 def add_elites(population, new_population):
     for i in range(0, elites_size):
         elite = Chromosome()
-        elite.values = numpy.copy(population.candidates[i].values)
+        elite.values = numpy.copy(population.chromosomes[i].values)
         new_population.append(elite)
 
 
@@ -63,10 +62,10 @@ def create_new_population(input_sudoku, population):
     population.sort()
 
     for _ in range(0, int(population_size / 2)):
-        first_parent = select_parent(population.candidates)
+        first_parent = select_parent(population.chromosomes)
         second_parent = first_parent
         while (first_parent == second_parent):
-            second_parent = select_parent(population.candidates)
+            second_parent = select_parent(population.chromosomes)
 
         first_child, second_child = create_childs_from_parents(first_parent, second_parent)
         crossover(first_child, second_child)
@@ -88,7 +87,7 @@ def solve(input_sudoku):
         print("> Generation number:", generation)
         if check_ultimate_state(population):
             return True
-        population.candidates = create_new_population(input_sudoku, population)
+        population.chromosomes = create_new_population(input_sudoku, population)
         population.update_fitness()
 
     print("Oops! Can't find the solution :(")

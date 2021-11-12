@@ -7,12 +7,12 @@ from .constants import *
 
 class Population(object):
     def __init__(self):
-        self.candidates = list()
+        self.chromosomes = list()
         return
 
 
     def sort(self):
-        self.candidates.sort()
+        self.chromosomes.sort()
 
 
     def prepare_feasible_values_for_each_cell(self):
@@ -52,7 +52,7 @@ class Population(object):
 
 
     def update_fitness(self):
-        for chromosome in self.candidates:
+        for chromosome in self.chromosomes:
             chromosome.update_fitness()
         return
 
@@ -65,7 +65,7 @@ class Population(object):
         for _ in range(0, population_size):
             chromosome = Chromosome()
             self.fill_blanks(chromosome)
-            self.candidates.append(chromosome)
+            self.chromosomes.append(chromosome)
 
         self.update_fitness()
         return
